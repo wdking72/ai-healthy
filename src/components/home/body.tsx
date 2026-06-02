@@ -2,6 +2,9 @@
 import Image from "next/image";
 import { Button } from "antd";
 
+
+
+
 export default function Body() {
   return (
     <div className="flex-1 flex items-center justify-center" style={{ background: 'linear-gradient(90deg, rgb(74, 156, 140) 0%, rgb(61, 138, 122) 100%) rgba(74, 156, 140, 0.95)' }}>

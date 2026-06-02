@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { Button } from "antd";
 import { useState } from "react";
+import Link from "next/link";
 
 export default function Header() {
   // 处理登录状态
@@ -33,8 +34,8 @@ export default function Header() {
           </>
           : 
           <>
-            <Button className="mx-2 text-lg" onClick={handleLogout}>登录</Button>
-            <Button className="mx-2 text-lg" type="primary">注册</Button>
+            <Button className="mx-2 text-lg" onClick={handleLogout}><Link href="/auth/login">登录</Link></Button>
+            <Button className="mx-2 text-lg" type="primary"><Link href="/auth/rigester">注册</Link></Button>
           </>
           }
           
