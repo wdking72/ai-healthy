@@ -20,14 +20,18 @@ export default function Header() {
         </div>
         <div>
           <nav>
-          <Button className="mx-2 text-lg" type="text">首页</Button>
+          <Button className="mx-2 text-lg" type="text">
+            <Link href="/">首页</Link>
+          </Button>
           {isLoggedIn ? 
           <>
             <Button className="mx-2 text-lg" type="text">AI咨询</Button>
             <Button className="mx-2 text-lg" type="text">情绪日记</Button>
           </>
           : null}
-          <Button className="mx-2 text-lg" type="text">知识库</Button>
+          <Button className="mx-2 text-lg" type="text">
+            <Link href="/front/knowledge">知识库</Link>
+          </Button>
           {isLoggedIn ? 
           <>
             <Button className="mx-2 text-lg" onClick={handleLogout}>退出登录</Button>
