@@ -67,5 +67,3 @@ export const loginUser = async (user: LoginUser) => {
 
   return { success: true, message: '登录成功' }
 }
-
-

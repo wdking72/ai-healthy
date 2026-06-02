@@ -4,7 +4,6 @@ import { Button } from "antd";
 import { useState } from "react";
 import Link from "next/link";
 import { useEffect } from "react";
-import { redirect } from "next/navigation";
 import { verifyTokenFromCookie } from "@/utils/cookieiAction";
 import { clearTokenCookie } from "@/utils/cookieiAction";
 
@@ -14,10 +13,12 @@ export default function Header() {
   useEffect(() => {
     const checkLoginStatus = async () => {
       const result = await verifyTokenFromCookie();
-      if (result.success) {
+      if (result.success && result.userInfo) {
         setIsLoggedIn(true);
+        localStorage.setItem('user', JSON.stringify(result.userInfo))
       } else {
-        redirect('/auth/login');
+        // 未登录，跳转到登录页
+        window.location.href = '/auth/login'
       }
     };
     checkLoginStatus();
@@ -26,6 +27,7 @@ export default function Header() {
 
   const handleLogout = async () => {
     await clearTokenCookie()
+    localStorage.removeItem('user') // 清除本地存储中的用户信息
     setIsLoggedIn(false)
   }
 

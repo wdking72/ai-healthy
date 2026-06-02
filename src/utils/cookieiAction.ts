@@ -10,7 +10,7 @@ export const verifyTokenFromCookie = async ( ) => {
   }
   try {
     const payload = await verifyToken(token.value)
-    return { success: true, payload }
+    return { success: true, userInfo: payload }
   } catch (error) {
     const errMsg = error instanceof Error ? error.message : 'token验证失败'
     return { success: false, message: errMsg }
