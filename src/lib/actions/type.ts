@@ -5,3 +5,8 @@ export interface UserType {
   nickname?: string
   phone?: string
 }
+
+export interface LoginUser {
+  username: string
+  password: string
+}

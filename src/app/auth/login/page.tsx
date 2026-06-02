@@ -1,11 +1,24 @@
 'use client'
-import { Form, Button, Input } from "antd"
+import { Form, Button, Input, message } from "antd"
 import Link from "next/link"
+import { redirect } from "next/navigation"
+import { loginUser } from "@/lib/actions/auth"
+import { LoginUser } from "@/lib/actions/type"
+import { useState } from "react"
 
 export default function Login() {
-  const onFinish = (values: unknown) => {
-    console.log('登录表单数据:', values)
-    // TODO: 处理登录逻辑
+  const [loading, setLoading] = useState(false)
+
+  const onFinish = async (values: unknown) => {
+    setLoading(true)
+    const result = await loginUser(values as LoginUser)
+    if (result.success) {
+      message.success('登录成功')
+      redirect('/')
+    } else {
+      message.error(result.message)
+      setLoading(false)
+    }
   }
 
   return (
@@ -47,13 +60,12 @@ export default function Login() {
         </Form.Item>
 
         <Form.Item className="mt-8">
-          <Button type="primary" htmlType="submit" size="large" block>
+          <Button type="primary" htmlType="submit" size="large" block loading={loading}>
             登录
           </Button>
         </Form.Item>
       </Form>
 
-      {/* 去注册 */}
       <p className="text-center text-gray-600 mt-6">
         还没有账号？<Link href="/auth/rigester" className="text-blue-500 hover:text-blue-600">去注册</Link>
       </p>

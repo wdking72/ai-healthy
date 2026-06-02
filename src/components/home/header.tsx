@@ -3,12 +3,30 @@ import Image from "next/image";
 import { Button } from "antd";
 import { useState } from "react";
 import Link from "next/link";
+import { useEffect } from "react";
+import { redirect } from "next/navigation";
+import { verifyTokenFromCookie } from "@/utils/cookieiAction";
+import { clearTokenCookie } from "@/utils/cookieiAction";
 
 export default function Header() {
-  // 处理登录状态
+    // 处理登录状态
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const handleLogout = () => {
-    setIsLoggedIn(!isLoggedIn);
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      const result = await verifyTokenFromCookie();
+      if (result.success) {
+        setIsLoggedIn(true);
+      } else {
+        redirect('/auth/login');
+      }
+    };
+    checkLoginStatus();
+  }, []);
+
+
+  const handleLogout = async () => {
+    await clearTokenCookie()
+    setIsLoggedIn(false)
   }
 
   return (
