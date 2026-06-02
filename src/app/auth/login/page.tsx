@@ -14,7 +14,12 @@ export default function Login() {
     const result = await loginUser(values as LoginUser)
     if (result.success) {
       message.success('登录成功')
-      redirect('/')
+      // 根据角色跳转不同的页面
+      if (result.role === 'admin') {
+        redirect('/back/dashboard')
+      } else {
+        redirect('/')
+      }
     } else {
       message.error(result.message)
       setLoading(false)

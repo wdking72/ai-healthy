@@ -65,5 +65,5 @@ export const loginUser = async (user: LoginUser) => {
     path: '/', // 所有路径都可以访问
   })
 
-  return { success: true, message: '登录成功' }
+  return { success: true, message: '登录成功', role: existingUser.role }
 }
