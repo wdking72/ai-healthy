@@ -26,5 +26,12 @@ export const clearTokenCookie = async () => {
     maxAge: 0,
     path: '/',
   })
+  cookieStore.set('user_info', '', {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 0,
+    path: '/',
+  })
   return { success: true, message: '已退出登录' }
 }
