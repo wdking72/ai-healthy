@@ -21,7 +21,7 @@
     "paths": {
       "@/*": ["./src/*"],
       "@/api/*": ["./src/app/api/*"],
-      "@/images/*": ["./public/images/*"]
+      "@/images/*": ["./public/images/*"],
     }
   },
   "include": [

@@ -1,11 +1,24 @@
 'use client'
-import { Form, Button, Input } from "antd"
+import { Form, Button, Input, message } from "antd"
 import Link from "next/link"
+import { redirect } from "next/navigation"
+import { addUser } from "@/lib/actions/auth"
+import { UserType } from "@/lib/actions/type"
 
 export default function Register() {
-  const onFinish = (values: unknown) => {
-    console.log('注册表单数据:', values)
-    // TODO: 处理注册逻辑
+  const [form] = Form.useForm()
+  const onFinish = async (values: unknown) => {
+    // 处理注册逻辑
+    const result = await addUser(values as UserType)
+    if (result.success) {
+      // 注册成功，跳转到登录页面
+      message.success('注册成功')
+      redirect('/auth/login')
+    } else {
+      // 注册失败，显示错误信息
+      message.error(result.message)
+    }
+    form.resetFields()
   }
 
   return (
