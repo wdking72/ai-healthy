@@ -18,9 +18,15 @@ const userSchema = new mongoose.Schema({
   // 可选字段
   nickname: {
     type: String,
+    default: '',
   },
   phone: {
     type: String,
+    default: '',
+  },
+  role: {
+    type: String,
+    default: 'admin',
   },
  
 })

@@ -16,6 +16,7 @@ export default function Register() {
       redirect('/auth/login')
     } else {
       // 注册失败，显示错误信息
+      console.log(result.error)
       message.error(result.message)
     }
     form.resetFields()
@@ -31,6 +32,7 @@ export default function Register() {
 
       {/* 注册表单 */}
       <Form
+        form={form}
         name="register"
         onFinish={onFinish}
         autoComplete="off"

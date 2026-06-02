@@ -6,6 +6,14 @@ import { hashPassword } from "@/utils/psdHash"
 
 export const addUser = async (user: UserType) => {
   await DBconnect() // 连接数据库
+  // // 统一后端数据库字段名
+  // const allUserType = {
+  //   username: user.username,
+  //   email: user.email,
+  //   password: user.password,
+  //   nickname: user.nickname,
+  //   phone: user.phone,
+  // }
   const newUser = new User(user)
   // 校验逻辑
   if (!newUser.username) {
@@ -25,7 +33,7 @@ export const addUser = async (user: UserType) => {
     return { success: true, message: '注册成功' }
   } catch (error: unknown) {
     if (error instanceof Error && 'code' in error && error.code === 11000) {
-      return { success: false, message: '该邮箱已被注册' }
+      return { success: false, message: '该邮箱已被注册', error: error.message }
     }
     return { success: false, message: '注册失败，请稍后重试' }
   }
