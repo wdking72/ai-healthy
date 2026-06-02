@@ -49,9 +49,7 @@ export default function Header() {
             <Button className="mx-2 text-lg" type="text">情绪日记</Button>
           </>
           : null}
-          <Button className="mx-2 text-lg" type="text">
-            <Link href="/front/knowledge">知识库</Link>
-          </Button>
+
           {isLoggedIn ? 
           <>
             <Button className="mx-2 text-lg" onClick={handleLogout}>退出登录</Button>

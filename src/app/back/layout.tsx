@@ -9,6 +9,7 @@ import { ReactNode } from 'react'
 const { Content } = Layout
 
 export default function BackLayout({ children }: { children: ReactNode }) {
+
   const [collapsed, setCollapsed] = useState(false)
 
   return (
