@@ -5,10 +5,9 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get('token')?.value
 
-  // 未登录 -> 访问后台则重定向到首页，否则放行
+  // 未登录 -> 只允许访问首页和认证页面，访问后台则重定向到首页
   if (!token) {
-    // 只允许访问认证页面和前台首页，其他页面重定向到登录页
-    if (pathname.startsWith('/auth')) {
+    if (pathname === '/' || pathname.startsWith('/auth')) {
       return NextResponse.next()
     }
     return NextResponse.redirect(new URL('/', request.url))

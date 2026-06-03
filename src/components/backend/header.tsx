@@ -1,7 +1,8 @@
 'use client'
 
-import { Layout, Button, Avatar, Space } from 'antd'
-import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined } from '@ant-design/icons'
+import { Layout, Button, Avatar, Space, Dropdown } from 'antd'
+import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons'
+import { clearTokenCookie } from '@/utils/cookieiAction'
 
 const { Header: AntHeader } = Layout
 
@@ -12,6 +13,12 @@ interface HeaderProps {
 }
 
 export default function Header({ collapsed, setCollapsed, title = '数据分析' }: HeaderProps) {
+  const handleLogout = async () => {
+    await clearTokenCookie()
+    window.location.href = '/auth/login'
+  }
+
+
   return (
     <AntHeader className="!bg-white !px-8 flex items-center justify-between !border-b !border-b-gray-100"
       style={{ height: 80, lineHeight: '80px' }}
@@ -29,8 +36,24 @@ export default function Header({ collapsed, setCollapsed, title = '数据分析'
       </Space>
 
       <Space>
-        <Avatar icon={<UserOutlined />} />
-        <span className="text-gray-500 text-base">admin</span>
+        <Dropdown
+          menu={{
+            items: [
+              {
+                key: 'logout',
+                icon: <LogoutOutlined />,
+                label: '退出登录',
+                onClick: handleLogout,
+              },
+            ],
+          }}
+          placement="bottomRight"
+        >
+          <div className="flex items-center cursor-pointer">
+            <Avatar icon={<UserOutlined />} />
+            <span className="text-gray-500 text-base ml-2">admin</span>
+          </div>
+        </Dropdown>
       </Space>
     </AntHeader>
   )
