@@ -30,7 +30,7 @@ export default function Header() {
   }
 
   return (
-    <div className="h-[70px] flex items-center justify-between px-40">
+    <div className="h-[70px] flex items-center justify-between px-40 border-b border-gray-200">
       <div className="flex items-center gap-2">
         <Image src="/images/机器人.png" alt="心理健康AI助手" width={50} height={50} />
         <span className="text-2xl font-semibold">心理健康AI助手</span>

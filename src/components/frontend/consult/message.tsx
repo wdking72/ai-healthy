@@ -1,7 +1,7 @@
 'use client'
 
 import { HeartOutlined, PlusOutlined } from '@ant-design/icons'
-import { Button } from 'antd'
+import { Button, Tooltip } from 'antd'
 
 export default function Message() {
   return (
@@ -18,12 +18,17 @@ export default function Message() {
             <div className="text-white/80 text-xs">您的心理助手，为您提供专业的心理咨询和建议。</div>
           </div>
         </div>
-        <Button
-          type="text"
-          shape="circle"
-          className="!w-8 !h-8 !bg-white/30 !text-white hover:!bg-white/50"
-          icon={<PlusOutlined />}
-        />
+        {/* 新增会话按钮 */}
+        <Tooltip title="新增会话" color='white' placement="bottom">
+          <div className="w-8 h-8 flex items-center justify-center">
+            <Button
+            type="text"
+            shape="circle"
+            className="!w-8 !h-8 !bg-white/30 !text-white hover:!bg-white/50"
+            icon={<PlusOutlined />}
+          />
+          </div>
+        </Tooltip>
       </div>
 
       {/* 消息内容区域 */}
