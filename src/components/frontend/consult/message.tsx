@@ -30,14 +30,19 @@ export default function Message({
   const [settingsOpen, setSettingsOpen] = useState(false)
   const virtuosoRef = useRef<VirtuosoHandle>(null)
   const scrollerRef = useRef<HTMLElement | Window | null>(null)
+  const lastScrollHeightRef = useRef(0)
 
-  // AI 回复期间：每隔 80ms 强制滚动到底部
+  // AI 回复期间：内容增长时滚动到底部（不闪烁）
   useEffect(() => {
     if (!loading) return
+    lastScrollHeightRef.current = 0
     const timer = setInterval(() => {
       const el = scrollerRef.current
       if (el && !(el instanceof Window)) {
-        el.scrollTop = el.scrollHeight
+        if (el.scrollHeight !== lastScrollHeightRef.current) {
+          lastScrollHeightRef.current = el.scrollHeight
+          el.scrollTop = el.scrollHeight
+        }
       }
     }, 80)
     return () => clearInterval(timer)
