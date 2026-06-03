@@ -1,5 +1,8 @@
 export interface Session {
-  id: string
+  _id: string
+  id?: string
   title: string
-  time: string
+  time?: string
+  createdAt?: string
+  updatedAt?: string
 }
