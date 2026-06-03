@@ -3,6 +3,7 @@
 import { SendOutlined, MessageOutlined, LoadingOutlined } from '@ant-design/icons'
 import { Button, Input } from 'antd'
 import { useState, useRef, useEffect } from 'react'
+import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso'
 import SessionHeader from './sessionHeader'
 import ModelSettingsModal from './modelSettingsModal'
 import type { ModelSettings } from './modelSettingsModal'
@@ -27,7 +28,20 @@ export default function Message({
   const [inputValue, setInputValue] = useState('')
   const [loading, setLoading] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const virtuosoRef = useRef<VirtuosoHandle>(null)
+  const scrollerRef = useRef<HTMLElement | Window | null>(null)
+
+  // AI 回复期间：每隔 80ms 强制滚动到底部
+  useEffect(() => {
+    if (!loading) return
+    const timer = setInterval(() => {
+      const el = scrollerRef.current
+      if (el && !(el instanceof Window)) {
+        el.scrollTop = el.scrollHeight
+      }
+    }, 80)
+    return () => clearInterval(timer)
+  }, [loading])
 
   // 切换会话时加载历史消息
   useEffect(() => {
@@ -60,11 +74,6 @@ export default function Message({
     return saved ? JSON.parse(saved) : null
   }
 
-  // 自动滚动到底部
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
-
   const handleSend = async () => {
     const text = inputValue.trim()
     if (!text || loading) return
@@ -73,6 +82,9 @@ export default function Message({
     setMessages((prev) => [...prev, { role: 'user', content: text }])
     setLoading(true)
     onLoadingChange(true)
+
+    // 发送后立即滚到底部（用户可能翻阅过历史）
+    // useEffect([messages, loading]) 会自动处理滚动
 
     // 创建 AbortController，旧的请求会被取消
     const controller = new AbortController()
@@ -198,11 +210,15 @@ export default function Message({
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-4">
-            {messages.map((msg, i) => (
+          <Virtuoso
+            ref={virtuosoRef}
+            scrollerRef={(ref) => { scrollerRef.current = ref }}
+            className="flex-1"
+            data={messages}
+            increaseViewportBy={200}
+            itemContent={(index, msg) => (
               <div
-                key={i}
-                className={`mb-4 flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} px-4 ${index === 0 ? 'pt-4' : ''} ${index < messages.length - 1 ? 'mb-4' : ''}`}
               >
                 <div
                   className={`max-w-[70%] px-4 py-3 text-sm shadow-sm border ${
@@ -211,16 +227,15 @@ export default function Message({
                       : 'bg-amber-50 rounded-2xl rounded-bl-md text-gray-800 border-amber-100'
                   }`}
                 >
-                  {msg.content || (loading && i === messages.length - 1 ? (
+                  {msg.content || (loading && index === messages.length - 1 ? (
                     <span className="text-gray-400">
                       <LoadingOutlined className="mr-1" />思考中...
                     </span>
                   ) : msg.content)}
                 </div>
               </div>
-            ))}
-            <div ref={messagesEndRef} />
-          </div>
+            )}
+          />
         )}
       </div>
 
