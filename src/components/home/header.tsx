@@ -1,14 +1,11 @@
 'use client'
 import Image from "next/image";
 import { Button } from "antd";
-import { useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
 import { clearTokenCookie } from "@/utils/cookieiAction";
 
 function getUserInfoFromCookie() {
-  if (typeof document === 'undefined') return null
-  // 从 cookie 中读取 user_info
-  // 注意：这里假设 user_info 是 JSON 字符串，实际应用中需要根据实际情况解析
   const match = document.cookie.match(/(?:^|;\s*)user_info=([^;]*)/)
   if (!match) return null
   try {
@@ -18,12 +15,22 @@ function getUserInfoFromCookie() {
   }
 }
 
+function useIsLoggedIn() {
+  return useSyncExternalStore(
+    // cookies 只在页面导航/刷新时变化，无需订阅
+    () => () => {},
+    // 客户端读取 cookie
+    () => !!getUserInfoFromCookie(),
+    // SSR 时永远返回 false
+    () => false,
+  )
+}
+
 export default function Header() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => !!getUserInfoFromCookie());
+  const isLoggedIn = useIsLoggedIn()
 
   const handleLogout = async () => {
     await clearTokenCookie()
-    setIsLoggedIn(false)
     window.location.href = '/'
   }
 
