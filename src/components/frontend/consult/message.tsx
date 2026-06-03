@@ -4,6 +4,8 @@ import { SendOutlined, MessageOutlined, LoadingOutlined } from '@ant-design/icon
 import { Button, Input } from 'antd'
 import { useState, useRef, useEffect } from 'react'
 import SessionHeader from './sessionHeader'
+import ModelSettingsModal from './modelSettingsModal'
+import type { ModelSettings } from './modelSettingsModal'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -15,7 +17,14 @@ export default function Message() {
   const [inputValue, setInputValue] = useState('')
   const [loading, setLoading] = useState(false)
   const [sessionId, setSessionId] = useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const getModelSettings = (): ModelSettings | null => {
+    if (typeof window === 'undefined') return null
+    const saved = localStorage.getItem('modelSettings')
+    return saved ? JSON.parse(saved) : null
+  }
 
   // 自动滚动到底部
   useEffect(() => {
@@ -34,13 +43,22 @@ export default function Message() {
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
 
     try {
+      const modelSettings = getModelSettings()
+      const body: Record<string, unknown> = {
+        sessionId,
+        message: text,
+      }
+      if (modelSettings && modelSettings.source !== 'siliconflow') {
+        body.modelSource = modelSettings.source
+        if (modelSettings.modelName) body.modelName = modelSettings.modelName
+        if (modelSettings.apiKey) body.apiKey = modelSettings.apiKey
+        if (modelSettings.baseURL) body.baseURL = modelSettings.baseURL
+      }
+
       const res = await fetch('/api/consult/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sessionId,
-          message: text,
-        }),
+        body: JSON.stringify(body),
       })
 
       if (!res.ok) {
@@ -111,7 +129,18 @@ export default function Message() {
 
   return (
     <div className="flex-1 flex flex-col bg-white">
-      <SessionHeader />
+      <SessionHeader
+        onNewSession={() => {
+          setMessages([])
+          setSessionId(null)
+        }}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
+      <ModelSettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        onSave={() => {}}
+      />
 
       {/* 消息内容区域 */}
       <div className="flex-1 mx-4 bg-gray-50 overflow-hidden flex items-center justify-center">

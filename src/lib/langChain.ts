@@ -15,7 +15,7 @@ export interface ModelConfig {
 const MODEL_DEFAULTS: Record<ModelConfig["source"], { baseURL: string; modelName: string }> = {
   siliconflow: {
     baseURL: "https://api.siliconflow.cn/v1",
-    modelName: "deepseek-ai/DeepSeek-V3.2",
+    modelName: "Qwen/Qwen3-8B",
   },
   deepseek: {
     baseURL: "https://api.deepseek.com",
