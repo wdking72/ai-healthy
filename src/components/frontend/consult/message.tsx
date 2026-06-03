@@ -15,9 +15,13 @@ interface ChatMessage {
 export default function Message({
   sessionId,
   onSessionChange,
+  onLoadingChange,
+  abortRef,
 }: {
   sessionId: string | null
   onSessionChange: (id: string | null) => void
+  onLoadingChange: (loading: boolean) => void
+  abortRef: React.MutableRefObject<AbortController | null>
 }) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
@@ -28,21 +32,26 @@ export default function Message({
   // 切换会话时加载历史消息
   useEffect(() => {
     if (!sessionId) return
+    let ignore = false
 
     const fetchMessages = async () => {
       try {
         const res = await fetch(`/api/consult/sessions/${sessionId}/messages`)
         if (!res.ok) return
         const data = await res.json()
-        setMessages((data.messages || []).map((m: { role: string; content: string }) => ({
-          role: m.role as 'user' | 'assistant',
-          content: m.content,
-        })))
+        if (!ignore) {
+          setMessages((data.messages || []).map((m: { role: string; content: string }) => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+          })))
+        }
       } catch (err) {
         console.error('获取消息失败:', err)
       }
     }
     fetchMessages()
+
+    return () => { ignore = true }
   }, [sessionId])
 
   const getModelSettings = (): ModelSettings | null => {
@@ -63,6 +72,11 @@ export default function Message({
     setInputValue('')
     setMessages((prev) => [...prev, { role: 'user', content: text }])
     setLoading(true)
+    onLoadingChange(true)
+
+    // 创建 AbortController，旧的请求会被取消
+    const controller = new AbortController()
+    abortRef.current = controller
 
     // 添加一个空的 AI 消息占位，后续流式填充
     setMessages((prev) => [...prev, { role: 'assistant', content: '' }])
@@ -84,6 +98,7 @@ export default function Message({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+        signal: controller.signal,
       })
 
       if (!res.ok) {
@@ -127,6 +142,7 @@ export default function Message({
         }
       }
     } catch (err) {
+      if ((err as Error)?.name === 'AbortError') return
       console.error('Chat error:', err)
       setMessages((prev) => {
         const updated = [...prev]
@@ -137,7 +153,9 @@ export default function Message({
         return updated
       })
     } finally {
+      abortRef.current = null
       setLoading(false)
+      onLoadingChange(false)
     }
   }
 
@@ -152,7 +170,11 @@ export default function Message({
     <div className="flex-1 flex flex-col bg-white">
       <SessionHeader
         onNewSession={() => {
+          abortRef.current?.abort()
+          abortRef.current = null
           setMessages([])
+          setLoading(false)
+          onLoadingChange(false)
           onSessionChange(null)
         }}
         onOpenSettings={() => setSettingsOpen(true)}
@@ -164,7 +186,7 @@ export default function Message({
       />
 
       {/* 消息内容区域 */}
-      <div className="flex-1 mx-4 bg-gray-50 overflow-hidden flex items-center justify-center">
+      <div className={`flex-1 mx-4 bg-gray-50 overflow-hidden flex ${messages.length === 0 ? 'items-center justify-center' : 'flex-col'}`}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center gap-4 text-gray-400 select-none">
             <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center">

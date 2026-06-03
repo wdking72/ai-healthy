@@ -9,10 +9,12 @@ export default function SessionHistory({
   activeId,
   onSelect,
   refreshKey,
+  loading,
 }: {
   activeId: string | null
   onSelect: (id: string) => void
   refreshKey?: number
+  loading?: boolean
 }) {
   const [sessions, setSessions] = useState<Session[]>([])
 
@@ -46,13 +48,13 @@ export default function SessionHistory({
   }
 
   return (
-    <div className="w-[300px] flex flex-col bg-white border-r border-gray-100">
+    <div className="w-[300px] flex flex-col bg-white border-r border-gray-100 min-h-0">
       {/* 会话列表 */}
       <div className="flex-1 flex flex-col min-h-0">
         <div className="px-4 pt-5 pb-3 text-gray-800 font-medium text-base">
           会话列表
         </div>
-        <div className="flex-1 overflow-y-auto px-3 pb-3">
+        <div className={`flex-1 overflow-y-auto px-3 pb-3 ${loading ? 'pointer-events-none opacity-60' : ''}`}>
           {sessions.length === 0 ? (
             <div className="text-gray-400 text-sm text-center pt-8">暂无会话记录</div>
           ) : (
