@@ -12,13 +12,38 @@ interface ChatMessage {
   content: string
 }
 
-export default function Message() {
+export default function Message({
+  sessionId,
+  onSessionChange,
+}: {
+  sessionId: string | null
+  onSessionChange: (id: string | null) => void
+}) {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [inputValue, setInputValue] = useState('')
   const [loading, setLoading] = useState(false)
-  const [sessionId, setSessionId] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // 切换会话时加载历史消息
+  useEffect(() => {
+    if (!sessionId) return
+
+    const fetchMessages = async () => {
+      try {
+        const res = await fetch(`/api/consult/sessions/${sessionId}/messages`)
+        if (!res.ok) return
+        const data = await res.json()
+        setMessages((data.messages || []).map((m: { role: string; content: string }) => ({
+          role: m.role as 'user' | 'assistant',
+          content: m.content,
+        })))
+      } catch (err) {
+        console.error('获取消息失败:', err)
+      }
+    }
+    fetchMessages()
+  }, [sessionId])
 
   const getModelSettings = (): ModelSettings | null => {
     if (typeof window === 'undefined') return null
@@ -70,7 +95,6 @@ export default function Message() {
 
       const decoder = new TextDecoder()
       let fullContent = ''
-      let newSessionId = sessionId
 
       while (true) {
         const { done, value } = await reader.read()
@@ -83,8 +107,9 @@ export default function Message() {
           try {
             const data = JSON.parse(line.slice(6))
             if (data.done) {
-              newSessionId = data.sessionId
-              if (!sessionId) setSessionId(data.sessionId)
+              if (!sessionId) {
+                onSessionChange(data.sessionId)
+              }
             } else if (data.content) {
               fullContent += data.content
               setMessages((prev) => {
@@ -100,10 +125,6 @@ export default function Message() {
             // 忽略解析错误
           }
         }
-      }
-
-      if (newSessionId && !sessionId) {
-        setSessionId(newSessionId)
       }
     } catch (err) {
       console.error('Chat error:', err)
@@ -132,7 +153,7 @@ export default function Message() {
       <SessionHeader
         onNewSession={() => {
           setMessages([])
-          setSessionId(null)
+          onSessionChange(null)
         }}
         onOpenSettings={() => setSettingsOpen(true)}
       />
