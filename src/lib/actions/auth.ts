@@ -5,6 +5,8 @@ import User from "@/lib/models/user"
 import { hashPassword, comparePassword } from "@/utils/psdHash"
 import { signToken } from "@/lib/jwt"
 import { cookies } from "next/headers"
+import { setUserInfoCookie } from "@/lib/cookieOptions"
+import type { CookieSetter } from "@/lib/cookieOptions"
 
 export const addUser = async (user: UserType) => {
   await DBconnect() // 连接数据库
@@ -63,6 +65,13 @@ export const loginUser = async (user: LoginUser) => {
     // 其他配置
     maxAge: 7 * 24 * 60 * 60, // 7天过期
     path: '/', // 所有路径都可以访问
+  })
+
+  // 设置非 HTTP-only 的 user_info cookie，供前端读取登录状态
+  setUserInfoCookie(cookieStore as CookieSetter, {
+    userId: existingUser._id.toString(),
+    username: existingUser.username,
+    role: existingUser.role,
   })
 
   return { success: true, message: '登录成功', role: existingUser.role }

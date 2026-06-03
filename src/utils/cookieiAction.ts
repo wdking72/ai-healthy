@@ -1,6 +1,8 @@
 'use server'
 import { cookies } from "next/headers";
 import { verifyToken } from "@/lib/jwt";
+import type { CookieSetter } from "@/lib/cookieOptions";
+import { clearUserInfoCookie } from "@/lib/cookieOptions";
 
 export const verifyTokenFromCookie = async ( ) => {
   const cookieStore = await cookies()
@@ -16,7 +18,7 @@ export const verifyTokenFromCookie = async ( ) => {
     return { success: false, message: errMsg }
   }
 } 
-
+// 清除 token cookie 和 user_info cookie
 export const clearTokenCookie = async () => {
   const cookieStore = await cookies()
   cookieStore.set('token', '', {
@@ -26,12 +28,6 @@ export const clearTokenCookie = async () => {
     maxAge: 0,
     path: '/',
   })
-  cookieStore.set('user_info', '', {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 0,
-    path: '/',
-  })
+  clearUserInfoCookie(cookieStore as CookieSetter)
   return { success: true, message: '已退出登录' }
-}
+} 

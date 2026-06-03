@@ -1,11 +1,12 @@
 'use client'
 import Image from "next/image";
 import { Button } from "antd";
-import { useSyncExternalStore } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { clearTokenCookie } from "@/utils/cookieiAction";
 
 function getUserInfoFromCookie() {
+  if (typeof document === 'undefined') return null
   const match = document.cookie.match(/(?:^|;\s*)user_info=([^;]*)/)
   if (!match) return null
   try {
@@ -15,19 +16,13 @@ function getUserInfoFromCookie() {
   }
 }
 
-function useIsLoggedIn() {
-  return useSyncExternalStore(
-    // cookies 只在页面导航/刷新时变化，无需订阅
-    () => () => {},
-    // 客户端读取 cookie
-    () => !!getUserInfoFromCookie(),
-    // SSR 时永远返回 false
-    () => false,
-  )
-}
-
 export default function Header() {
-  const isLoggedIn = useIsLoggedIn()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+
+  useEffect(() => {
+    // cookie 是外部状态，需要在客户端 mount 后读取
+    setIsLoggedIn(!!getUserInfoFromCookie())
+  }, [])
 
   const handleLogout = async () => {
     await clearTokenCookie()
@@ -46,7 +41,9 @@ export default function Header() {
         </Button>
         {isLoggedIn && (
           <>
-            <Button className="mx-2 text-lg" type="text">AI咨询</Button>
+            <Button className="mx-2 text-lg" type="text">
+              <Link href="/front/consult">AI咨询</Link>
+            </Button>
             <Button className="mx-2 text-lg" type="text">情绪日记</Button>
           </>
         )}
