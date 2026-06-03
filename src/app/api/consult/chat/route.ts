@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
           }
         } catch (err) {
           console.error("LLM stream error:", err)
-          const errorMsg = "抱歉，AI 回复出现错误，请稍后重试。"
+          const errorMsg = err instanceof Error ? `抱歉，AI 回复出现错误：${err.message}` : "抱歉，AI 回复出现错误，请稍后重试。"
           fullReply = errorMsg
           const data = JSON.stringify({ content: errorMsg })
           controller.enqueue(encoder.encode(`data: ${data}\n\n`))
