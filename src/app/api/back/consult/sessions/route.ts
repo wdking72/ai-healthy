@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const sessions = await ConsultSession.find({ userId })
       .sort({ updatedAt: -1 })
-      .select("title summary createdAt updatedAt")
+      .select("title summary createdAt updatedAt crisisFlagged")
       .lean()
 
     // 为每个会话附上情绪标签概览

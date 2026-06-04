@@ -3,7 +3,7 @@ import { verifyToken } from "@/lib/jwt"
 import DBconnect from "@/lib/db"
 import ConsultMessage from "@/lib/models/consultMessage"
 import ConsultSession from "@/lib/models/consultSession"
-import { generateReply } from "@/lib/langChain"
+import { generateReply, detectEmotion, summarizeHistory } from "@/lib/langChain"
 import mongoose from "mongoose"
 
 export async function POST(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     const userId = payload.userId as string
 
     // 2. 解析请求体（含模型配置）
-    const { sessionId, message, modelSource, modelName, apiKey, baseURL } = await request.json()
+    const { sessionId, message, modelSource, modelName, apiKey, baseURL, maxHistory = 20 } = await request.json()
     if (!message?.trim()) {
       return NextResponse.json({ error: "消息不能为空" }, { status: 400 })
     }
@@ -46,24 +46,60 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // 4. 保存用户消息
-    await ConsultMessage.create({
+    // 4. 保存用户消息（获取 ID 用于后续情绪检测更新）
+    const userMessage = await ConsultMessage.create({
       sessionId: session._id,
       role: "user",
       content: message,
     })
+    const userMessageId = userMessage._id
 
-    // 5. 加载历史消息用于上下文
-    const historyMessages = await ConsultMessage.find({ sessionId: session._id })
-      .sort({ createdAt: -1 })
-      .limit(20)
-      .select("role content")
-      .lean()
+    // 5. 加载历史消息 + 长期记忆摘要管理
+    const totalMessages = await ConsultMessage.countDocuments({ sessionId: session._id })
+    let history: { role: string; content: string }[]
+    let summary: string | undefined
 
-    // 历史消息从旧到新排列（去掉刚发的用户消息作为输入，其余作为上下文）
-    const history = (historyMessages as { role: string; content: string }[])
-      .reverse()
-      .slice(0, -1) // 去掉最新一条（当前输入），因为会作为 input 传入
+    if (totalMessages > maxHistory + 1) {
+      // 消息超过阈值，需要加载摘要
+      const allMessages = await ConsultMessage.find({ sessionId: session._id })
+        .sort({ createdAt: -1 })
+        .select("role content")
+        .lean()
+
+      const ordered = (allMessages as { role: string; content: string }[]).reverse()
+
+      // 最新一条是当前用户输入，不要作为历史；取最近 maxHistory 条作为短期记忆
+      const recentMessages = ordered.slice(-maxHistory - 1, -1)
+      // 这之前的消息需要摘要（只摘一次，存到 session.summary）
+      const oldMessages = ordered.slice(0, ordered.length - maxHistory - 1)
+
+      if (!session.summary && oldMessages.length > 0) {
+        // 异步生成摘要（不阻塞当前请求，摘要生成完再更新 session）
+        summarizeHistory(oldMessages, {
+          source: (modelSource || session.modelSource) as "siliconflow" | "deepseek" | "custom",
+          apiKey,
+          baseURL,
+          modelName,
+        }).then((summaryText) => {
+          ConsultSession.findByIdAndUpdate(session._id, { summary: summaryText }).catch(console.error)
+        }).catch(console.error)
+      }
+
+      summary = session.summary || undefined
+      history = recentMessages
+    } else {
+      // 消息未超阈值，直接从数据库加载最近的历史
+      const historyMessages = await ConsultMessage.find({ sessionId: session._id })
+        .sort({ createdAt: -1 })
+        .limit(maxHistory)
+        .select("role content")
+        .lean()
+
+      history = (historyMessages as { role: string; content: string }[])
+        .reverse()
+        .slice(0, -1) // 去掉最新一条（当前输入）
+      summary = session.summary || undefined
+    }
 
     // 6. SSE 流式返回
     const encoder = new TextEncoder()
@@ -80,7 +116,18 @@ export async function POST(request: NextRequest) {
             modelName,
           }
 
-          for await (const chunk of generateReply(message, history, modelConfig)) {
+          // 并行执行情绪检测（不阻塞流式回复）
+          detectEmotion(message, modelConfig)
+            .then((tag) => {
+              ConsultMessage.findByIdAndUpdate(userMessageId, { emotionTag: tag }).catch(console.error)
+              if (tag === "危机") {
+                // 标记会话为危机状态，后台可据此筛选展示
+                ConsultSession.findByIdAndUpdate(session._id, { crisisFlagged: true }).catch(console.error)
+              }
+            })
+            .catch((err) => console.error("Emotion detection error:", err))
+
+          for await (const chunk of generateReply(message, history, modelConfig, summary)) {
             fullReply += chunk
             const data = JSON.stringify({ content: chunk })
             controller.enqueue(encoder.encode(`data: ${data}\n\n`))

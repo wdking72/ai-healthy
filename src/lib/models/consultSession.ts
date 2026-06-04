@@ -23,6 +23,10 @@ const consultSessionSchema = new mongoose.Schema({
     type: String,
     default: "DeepSeek-V2",
   },
+  crisisFlagged: {
+    type: Boolean,
+    default: false,
+  },
 }, {
   timestamps: true,
 })
