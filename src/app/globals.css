@@ -1,1 +1,20 @@
 @import "tailwindcss";
+
+/* Virtuoso 滚动条：仅悬停时显示 */
+[data-virtuoso-scroller] {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+[data-virtuoso-scroller]:hover {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+[data-virtuoso-scroller]::-webkit-scrollbar {
+  width: 6px;
+}
+[data-virtuoso-scroller]::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 3px;
+}
+[data-virtuoso-scroller]:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}

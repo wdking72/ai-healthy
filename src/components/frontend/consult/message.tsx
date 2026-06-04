@@ -28,6 +28,7 @@ export default function Message({
   const [inputValue, setInputValue] = useState('')
   const [loading, setLoading] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const [sessionLoading, setSessionLoading] = useState(false)
   const virtuosoRef = useRef<VirtuosoHandle>(null)
   const scrollerRef = useRef<HTMLElement | Window | null>(null)
   const lastScrollHeightRef = useRef(0)
@@ -51,6 +52,7 @@ export default function Message({
   // 切换会话时加载历史消息
   useEffect(() => {
     if (!sessionId) return
+    setSessionLoading(true)
     let ignore = false
 
     const fetchMessages = async () => {
@@ -66,6 +68,8 @@ export default function Message({
         }
       } catch (err) {
         console.error('获取消息失败:', err)
+      } finally {
+        if (!ignore) setSessionLoading(false)
       }
     }
     fetchMessages()
@@ -203,8 +207,13 @@ export default function Message({
       />
 
       {/* 消息内容区域 */}
-      <div className={`flex-1 mx-4 bg-gray-50 overflow-hidden flex ${messages.length === 0 ? 'items-center justify-center' : 'flex-col'}`}>
-        {messages.length === 0 ? (
+      <div className={`flex-1 mx-4 bg-gray-50 overflow-hidden flex ${sessionLoading || messages.length === 0 ? 'items-center justify-center' : 'flex-col'}`}>
+        {sessionLoading ? (
+          <div className="flex flex-col items-center gap-4 text-gray-400 select-none">
+            <LoadingOutlined className="text-3xl text-amber-400" />
+            <div className="text-gray-500 text-sm">加载中...</div>
+          </div>
+        ) : messages.length === 0 ? (
           <div className="flex flex-col items-center gap-4 text-gray-400 select-none">
             <div className="w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center">
               <MessageOutlined className="text-3xl text-amber-400" />
@@ -216,11 +225,14 @@ export default function Message({
           </div>
         ) : (
           <Virtuoso
+            key={sessionId}
             ref={virtuosoRef}
             scrollerRef={(ref) => { scrollerRef.current = ref }}
             className="flex-1"
             data={messages}
+            initialTopMostItemIndex={Math.max(0, messages.length - 1)}
             increaseViewportBy={200}
+            components={{ Footer: () => <div className="h-4" /> }}
             itemContent={(index, msg) => (
               <div
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} px-4 ${index === 0 ? 'pt-4' : ''} ${index < messages.length - 1 ? 'mb-4' : ''}`}
