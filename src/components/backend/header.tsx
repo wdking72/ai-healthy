@@ -3,6 +3,9 @@
 import { Layout, Button, Avatar, Space, Dropdown } from 'antd'
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons'
 import { clearTokenCookie } from '@/utils/cookieiAction'
+import { BackStore } from "@/stores/backStore";
+
+
 
 const { Header: AntHeader } = Layout
 
@@ -12,7 +15,8 @@ interface HeaderProps {
   title?: string
 }
 
-export default function Header({ collapsed, setCollapsed, title = '数据分析' }: HeaderProps) {
+export default function Header({ collapsed, setCollapsed }: HeaderProps) {
+  const selectedKey = BackStore(state => state.selectedKey)
   const handleLogout = async () => {
     await clearTokenCookie()
     window.location.href = '/auth/login'
@@ -31,7 +35,7 @@ export default function Header({ collapsed, setCollapsed, title = '数据分析'
           className="!text-lg !w-16 !h-16"
         />
         <span className="text-xl font-semibold text-gray-800">
-          {title}
+          {selectedKey === 'data-analysis' ? '数据分析' : '咨询记录'}
         </span>
       </Space>
 

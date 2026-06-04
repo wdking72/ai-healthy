@@ -8,7 +8,10 @@ import {
   SmileOutlined,
 } from '@ant-design/icons'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { BackStore } from "@/stores/backStore";
+
+
 
 const { Sider } = Layout
 
@@ -18,7 +21,7 @@ interface SideBarProps {
 
 const menuItems = [
   {
-    key: 'data-analysis',
+    key: 'dashboard',
     icon: <PieChartOutlined />,
     label: '数据分析',
   },
@@ -40,7 +43,14 @@ const menuItems = [
 ]
 
 export default function SideBar({ collapsed }: SideBarProps) {
-  const [selectedKey, setSelectedKey] = useState('data-analysis')
+  const router = useRouter()
+  const selectedKey = BackStore(state => state.selectedKey)
+  const setSelectedKey = BackStore(state => state.setSelectedKey)
+  const handleClick = (key: string) => {
+    setSelectedKey(key)
+    router.push(`/back/${key}`)
+  }
+
 
   return (
     <Sider
@@ -82,7 +92,7 @@ export default function SideBar({ collapsed }: SideBarProps) {
         mode="inline"
         selectedKeys={[selectedKey]}
         items={menuItems}
-        onClick={({ key }) => setSelectedKey(key)}
+        onClick={({ key }) => handleClick(key)}
         className="!border-r-0 pt-2"
         style={{ fontSize: 16 }}
       />
