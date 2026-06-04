@@ -6,6 +6,6 @@ interface BackStoreState {
 }
 
 export const BackStore = create<BackStoreState>((set) => ({
-  selectedKey: 'data-analysis',
+  selectedKey: 'dashboard',
   setSelectedKey: (key: string) => set({ selectedKey: key}),
 }))

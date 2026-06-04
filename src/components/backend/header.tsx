@@ -35,7 +35,7 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
           className="!text-lg !w-16 !h-16"
         />
         <span className="text-xl font-semibold text-gray-800">
-          {selectedKey === 'data-analysis' ? '数据分析' : '咨询记录'}
+          {selectedKey === 'dashboard' ? '数据分析' : '咨询记录'}
         </span>
       </Space>
 

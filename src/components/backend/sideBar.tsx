@@ -3,9 +3,7 @@
 import { Layout, Menu } from 'antd'
 import {
   PieChartOutlined,
-  FileTextOutlined,
   MessageOutlined,
-  SmileOutlined,
 } from '@ant-design/icons'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -26,19 +24,9 @@ const menuItems = [
     label: '数据分析',
   },
   {
-    key: 'articles',
-    icon: <FileTextOutlined />,
-    label: '知识文章',
-  },
-  {
     key: 'consultation',
     icon: <MessageOutlined />,
     label: '咨询记录',
-  },
-  {
-    key: 'mood-log',
-    icon: <SmileOutlined />,
-    label: '情绪日志',
   },
 ]
 
