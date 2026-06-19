@@ -3,7 +3,7 @@
 import { Layout, Button, Avatar, Space, Dropdown } from 'antd'
 import { MenuFoldOutlined, MenuUnfoldOutlined, UserOutlined, LogoutOutlined } from '@ant-design/icons'
 import { clearTokenCookie } from '@/utils/cookieiAction'
-import { BackStore } from "@/stores/backStore";
+import { useSelectedKey, useUser, useLogout } from "@/stores/backStore";
 
 
 
@@ -16,9 +16,12 @@ interface HeaderProps {
 }
 
 export default function Header({ collapsed, setCollapsed }: HeaderProps) {
-  const selectedKey = BackStore(state => state.selectedKey)
+  const selectedKey = useSelectedKey()
+  const user = useUser()
+  const logout = useLogout()
   const handleLogout = async () => {
     await clearTokenCookie()
+    logout()
     window.location.href = '/auth/login'
   }
 
@@ -55,7 +58,7 @@ export default function Header({ collapsed, setCollapsed }: HeaderProps) {
         >
           <div className="flex items-center cursor-pointer">
             <Avatar icon={<UserOutlined />} />
-            <span className="text-gray-500 text-base ml-2">admin</span>
+            <span className="text-gray-500 text-base ml-2">{user?.nickname || user?.username || 'admin'}</span>
           </div>
         </Dropdown>
       </Space>

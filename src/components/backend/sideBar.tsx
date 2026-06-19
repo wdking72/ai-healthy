@@ -7,7 +7,7 @@ import {
 } from '@ant-design/icons'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { BackStore } from "@/stores/backStore";
+import { useSelectedKey, useSetSelectedKey } from "@/stores/backStore";
 
 
 
@@ -32,8 +32,8 @@ const menuItems = [
 
 export default function SideBar({ collapsed }: SideBarProps) {
   const router = useRouter()
-  const selectedKey = BackStore(state => state.selectedKey)
-  const setSelectedKey = BackStore(state => state.setSelectedKey)
+  const selectedKey = useSelectedKey()
+  const setSelectedKey = useSetSelectedKey()
   const handleClick = (key: string) => {
     setSelectedKey(key)
     router.push(`/back/${key}`)
