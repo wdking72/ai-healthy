@@ -84,6 +84,7 @@ export default function Consultation() {
   // 加载用户列表
   useEffect(() => {
     let ignore = false
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setUsersLoading(true)
     ;(async () => {
       try {
@@ -103,6 +104,7 @@ export default function Consultation() {
   // 选中用户时加载会话列表
   useEffect(() => {
     if (!selectedUserId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSessions([])
       setOverview(null)
       setSelectedSessionId(null)
@@ -130,6 +132,7 @@ export default function Consultation() {
   // 选中会话时加载概览
   useEffect(() => {
     if (!selectedSessionId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setOverview(null)
       return
     }

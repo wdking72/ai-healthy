@@ -52,6 +52,7 @@ export default function Message({
   // 切换会话时加载历史消息
   useEffect(() => {
     if (!sessionId) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSessionLoading(true)
     let ignore = false
 

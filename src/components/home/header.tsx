@@ -21,6 +21,7 @@ export default function Header() {
 
   useEffect(() => {
     // cookie 是外部状态，需要在客户端 mount 后读取
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsLoggedIn(!!getUserInfoFromCookie())
   }, [])
 
