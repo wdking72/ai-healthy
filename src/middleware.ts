@@ -3,7 +3,7 @@ import { verifyToken } from '@/lib/jwt'
 import { setUserInfoCookie, clearUserInfoCookie } from '@/lib/cookieOptions'
 import type { CookieSetter } from '@/lib/cookieOptions'
 
-export async function proxy(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   const token = request.cookies.get('token')?.value
 
